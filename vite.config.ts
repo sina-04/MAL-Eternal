@@ -15,6 +15,7 @@ const hostingConfig = JSON.parse(
   readFileSync(existsSync(privateHostingConfig) ? privateHostingConfig : publicHostingConfig, "utf8"),
 ) as HostingConfig;
 const { d1, r2 } = hostingConfig;
+const isRenderPreview = process.env.MAL_RENDER_PREVIEW === "1";
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
@@ -57,7 +58,7 @@ export default defineConfig(async () => {
       : undefined,
     plugins: [
       vinext(),
-      sites(),
+      ...(isRenderPreview ? [] : [sites()]),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         config: localBindingConfig,
