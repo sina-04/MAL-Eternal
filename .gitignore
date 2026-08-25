@@ -21,6 +21,7 @@
 # misc
 .DS_Store
 *.pem
+*.tsbuildinfo
 
 # debug
 npm-debug.log*
@@ -38,9 +39,11 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+/.render-preview/
 
-# Private Sites project configuration (copy the public example locally)
+# Private workspace-only configuration and prompt history
 /.openai/hosting.json
+/Prompt.md
 
 # Source artwork kept outside the deployable site
 /Doom Eternal/

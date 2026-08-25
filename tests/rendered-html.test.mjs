@@ -144,3 +144,23 @@ test("replaces native selects with accessible Doom-styled dropdown controls", as
   assert.match(styles, /\.doom-select__menu/);
   assert.match(styles, /\.doom-select__option\[aria-selected="true"\]/);
 });
+
+test("ships an isolated disposable Render preview without personal seed data", async () => {
+  const [server, blueprint, commandCenter, i18n] = await Promise.all([
+    readFile(new URL("../render/server.ts", import.meta.url), "utf8"),
+    readFile(new URL("../render.yaml", import.meta.url), "utf8"),
+    readFile(new URL("../components/command-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/i18n.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(blueprint, /plan: free/);
+  assert.match(blueprint, /MAL_RENDER_PREVIEW/);
+  assert.match(blueprint, /\/tmp\/mal-eternal-preview\.sqlite/);
+  assert.match(server, /DatabaseSync/);
+  assert.match(server, /mal_preview_id/);
+  assert.match(server, /user_id = \?/);
+  assert.match(server, /\/api\/achievements/);
+  assert.doesNotMatch(server, /INSERT INTO achievements[\s\S]*VALUES\s*\([^?]/);
+  assert.match(commandCenter, /NEXT_PUBLIC_MAL_RENDER_PREVIEW/);
+  assert.match(i18n, /Temporary records can reset/);
+});

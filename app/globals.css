@@ -288,6 +288,35 @@ html[lang="fa"] :where(.achievement-card h3, .achievement-card p, .month-branch 
 
 .command-center__stage { min-width: 0; }
 
+.render-preview-badge {
+  position: fixed;
+  z-index: 65;
+  inset-block-start: 0.7rem;
+  inset-inline-start: 50%;
+  display: grid;
+  max-width: min(30rem, calc(100vw - 8rem));
+  padding: 0.5rem 0.9rem;
+  color: #f7d8aa;
+  text-align: center;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(53, 8, 8, 0.94), rgba(16, 3, 5, 0.92));
+  border: 1px solid rgba(255, 106, 43, 0.48);
+  box-shadow: 0 0 24px rgba(222, 53, 21, 0.22);
+  transform: translateX(-50%);
+}
+
+.render-preview-badge strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.13em;
+}
+
+.render-preview-badge span {
+  margin-block-start: 0.15rem;
+  color: #bb9475;
+  font-size: 0.58rem;
+}
+
 .command-rail {
   position: relative;
   display: flex;

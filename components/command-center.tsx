@@ -56,6 +56,7 @@ const CURRENT_SOLAR_YEAR = getCurrentSolarHijriYear();
 const SOLAR_YEARS = Array.from({ length: CURRENT_SOLAR_YEAR - 1400 }, (_, index) => CURRENT_SOLAR_YEAR - index);
 const CALENDAR_PREFERENCE_KEY = "mal-eternal:calendar-mode";
 const EMPTY_SUMMARY: AnalyticsSummary = summarizeAchievements([]);
+const IS_RENDER_PREVIEW = process.env.NEXT_PUBLIC_MAL_RENDER_PREVIEW === "1";
 
 export function CommandCenter() {
   const { locale, t } = useLocale();
@@ -252,6 +253,12 @@ export function CommandCenter() {
 
   return (
     <section className={`command-center ${addingFlow ? "command-center--adding" : ""}`} aria-label={t("commandCenter")}>
+      {IS_RENDER_PREVIEW ? (
+        <div className="render-preview-badge" role="status">
+          <strong>{t("freePreview")}</strong>
+          <span>{t("previewDataReset")}</span>
+        </div>
+      ) : null}
       <button className="rail-toggle rail-toggle--left" type="button" onClick={() => setMobileRail(mobileRail === "left" ? null : "left")} aria-expanded={mobileRail === "left"} aria-label={t("openAchievementSide")}>☰</button>
       <aside className={`command-rail command-rail--left ${mobileRail === "left" ? "command-rail--open" : ""}`} aria-label={t("achievementSide")}>
         <div className="command-rail__crest" aria-hidden="true">MAL</div>

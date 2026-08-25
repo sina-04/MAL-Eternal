@@ -104,6 +104,12 @@ worker/       Cloudflare Worker entry point
 
 The app is designed for a Cloudflare Worker/Sites environment with a D1 database bound as `DB`. Configure authentication at the hosting layer and keep all environment-specific identifiers and secrets outside version control.
 
+### Render free preview
+
+The included [`render.yaml`](render.yaml) runs a disposable Render preview with Node.js and an ephemeral SQLite database. Each browser receives an anonymous cookie-scoped archive, but records can disappear whenever the free service restarts, spins down, or redeploys. This mode is for evaluation only and must not be used as the durable home of personal achievement data.
+
+For a production Render deployment, replace the preview adapter with managed persistent storage and an explicit owner authentication layer.
+
 ## License and attribution
 
 The application code is available under the MIT License. Sahel font attribution is included in [`public/fonts/Sahel-LICENSE.txt`](public/fonts/Sahel-LICENSE.txt).
