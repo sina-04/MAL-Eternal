@@ -1,5 +1,9 @@
 # MAL Eternal
 
+[![CI](https://github.com/sina-04/MAL-Eternal/actions/workflows/ci.yml/badge.svg)](https://github.com/sina-04/MAL-Eternal/actions/workflows/ci.yml)
+[![Live preview](https://img.shields.io/badge/preview-Render-46E3B7)](https://mal-eternal.onrender.com)
+[![License: MIT](https://img.shields.io/badge/code%20license-MIT-yellow.svg)](LICENSE)
+
 > **Shotgun shells blaze red, demons awaken at night. Halo may stretch to infinity—but your victories are Eternal.**
 
 MAL Eternal is a private, Doom-inspired achievement command center for recording victories, exploring Gregorian and Solar Hijri timelines, searching archives, and viewing analytics—with cinematic audio, bilingual English/Persian UI, and RTL support.
@@ -112,6 +116,10 @@ For a production Render deployment, replace the preview adapter with managed per
 
 ## License and attribution
 
-The application code is available under the MIT License. Sahel font attribution is included in [`public/fonts/Sahel-LICENSE.txt`](public/fonts/Sahel-LICENSE.txt).
+The original application code is available under the MIT License. The bundled
+media, artwork, trademarks, and fonts are not covered by that grant. Review
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and the Sahel attribution
+in [`public/fonts/Sahel-LICENSE.txt`](public/fonts/Sahel-LICENSE.txt) before
+redistributing the project.
 
 MAL Eternal is an independent fan project and is not affiliated with or endorsed by id Software, Bethesda Softworks, ZeniMax Media, or Microsoft. DOOM-related names and media belong to their respective owners; review asset rights before redistributing or publicly deploying the bundled media.
