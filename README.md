@@ -21,6 +21,7 @@ MAL Eternal is a private, Doom-inspired achievement command center for recording
 - Lifetime, cycle, monthly, streak, category, and comparative analytics.
 - Full English/Persian localization, RTL layouts, Persian numerals, and bundled Sahel typography.
 - Responsive desktop rails, tablet drawers, and mobile navigation, with reduced-motion support.
+- Local JSON backup, validated import preview, duplicate-safe merge, full replacement, and export.
 - Server-enforced record ownership backed by Cloudflare D1.
 
 ## Technology
@@ -81,6 +82,54 @@ Generate a new migration after changing the Drizzle schema:
 npm run db:generate
 ```
 
+## JSON backup and restore
+
+Use **Export JSON** in the Achievement Side to download the complete archive to your device. The file contains achievement records only—never authentication cookies, account identifiers, or deployment secrets.
+
+Use **Import JSON** to select a backup and review it before changing the archive:
+
+- **Merge with Archive** adds records that are not already present and skips exact duplicates.
+- **Replace Archive** deletes the archive currently associated with the browser/user and restores the selected file. The interface requires explicit confirmation before this action.
+- After import, Chronicle trees, the Archive, Milestones, filters, sidebar totals, and Analytics refresh from the imported records.
+
+### Writing a compatible JSON file
+
+Save a UTF-8 file with a `.json` extension using this structure:
+
+```json
+{
+  "format": "mal-eternal-achievements",
+  "version": 1,
+  "exportedAt": "2026-08-26T00:00:00.000Z",
+  "achievements": [
+    {
+      "title": "Completed a major project",
+      "description": "Shipped the first stable release and documented the result.",
+      "achievedOn": "2026-08-25",
+      "startedOn": "2026-07-01",
+      "finishedOn": "2026-08-24",
+      "category": "project",
+      "customCategory": null,
+      "tags": ["release", "documentation"],
+      "importance": "milestone",
+      "notes": "Optional private notes"
+    }
+  ]
+}
+```
+
+The same schema is available as [`examples/mal-eternal-backup.example.json`](examples/mal-eternal-backup.example.json).
+
+Rules:
+
+- `title`, `description`, `achievedOn`, `category`, and `importance` are required.
+- Dates use `YYYY-MM-DD`. They must satisfy `startedOn ≤ finishedOn ≤ achievedOn`, and completion cannot be in the future.
+- Categories are `career`, `learning`, `project`, `academic`, `research`, `health`, `personal`, `creative`, `social`, `other`, or `custom`.
+- When `category` is `custom`, provide a non-empty `customCategory`.
+- Importance is `low`, `normal`, `high`, or `milestone`.
+- `tags` is an array of up to ten strings. Optional dates, `customCategory`, and `notes` may be `null`.
+- A file may contain up to 1,000 records and must remain below 900 KB for the free Render preview.
+
 ## Quality checks
 
 ```bash
@@ -110,7 +159,9 @@ The app is designed for a Cloudflare Worker/Sites environment with a D1 database
 
 ### Render free preview
 
-The included [`render.yaml`](render.yaml) runs a disposable Render preview with Node.js and an ephemeral SQLite database. Each browser receives an anonymous cookie-scoped archive, but records can disappear whenever the free service restarts, spins down, or redeploys. This mode is for evaluation only and must not be used as the durable home of personal achievement data.
+> **Data notice:** the free Render deployment uses temporary storage. Records can disappear whenever the service restarts, spins down, or redeploys. Export a JSON backup after making changes and import it again when the preview archive resets.
+
+The included [`render.yaml`](render.yaml) runs a disposable Render preview with Node.js and an ephemeral SQLite database. Each browser receives an anonymous cookie-scoped archive. This mode is for evaluation only and must not be used as the durable home of personal achievement data.
 
 For a production Render deployment, replace the preview adapter with managed persistent storage and an explicit owner authentication layer.
 

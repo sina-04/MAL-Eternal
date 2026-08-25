@@ -145,12 +145,28 @@ test("replaces native selects with accessible Doom-styled dropdown controls", as
   assert.match(styles, /\.doom-select__option\[aria-selected="true"\]/);
 });
 
+test("uses labeled mobile navigation, true drawers, and unobstructed modal controls", async () => {
+  const [commandCenter, styles] = await Promise.all([
+    readFile(new URL("../components/command-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(commandCenter, /mobile-command-nav/);
+  assert.match(commandCenter, /aria-controls="achievement-rail"/);
+  assert.match(commandCenter, /aria-controls="analytical-rail"/);
+  assert.match(commandCenter, /resetViewport/);
+  assert.match(styles, /\(pointer: coarse\)/);
+  assert.match(styles, /\.command-center:has\(\.dialog-backdrop\)/);
+  assert.match(styles, /\.experience:has\(\.command-center--adding\) \.language-switch/);
+  assert.match(styles, /\.command-center--adding > \.mobile-command-nav/);
+});
+
 test("ships an isolated disposable Render preview without personal seed data", async () => {
-  const [server, blueprint, commandCenter, i18n] = await Promise.all([
+  const [server, blueprint, commandCenter, backupDialog, readme] = await Promise.all([
     readFile(new URL("../render/server.ts", import.meta.url), "utf8"),
     readFile(new URL("../render.yaml", import.meta.url), "utf8"),
     readFile(new URL("../components/command-center.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../lib/i18n.ts", import.meta.url), "utf8"),
+    readFile(new URL("../components/backup-dialog.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
 
   assert.match(blueprint, /plan: free/);
@@ -160,7 +176,12 @@ test("ships an isolated disposable Render preview without personal seed data", a
   assert.match(server, /mal_preview_id/);
   assert.match(server, /user_id = \?/);
   assert.match(server, /\/api\/achievements/);
+  assert.match(server, /\/api\/achievements\/import/);
   assert.doesNotMatch(server, /INSERT INTO achievements[\s\S]*VALUES\s*\([^?]/);
-  assert.match(commandCenter, /NEXT_PUBLIC_MAL_RENDER_PREVIEW/);
-  assert.match(i18n, /Temporary records can reset/);
+  assert.doesNotMatch(commandCenter, /render-preview-badge/);
+  assert.match(commandCenter, /mobile-command-nav/);
+  assert.match(commandCenter, /createAchievementBackup/);
+  assert.match(backupDialog, /Merge with Archive|backupMerge/);
+  assert.match(readme, /free Render deployment uses temporary storage/i);
+  assert.match(readme, /mal-eternal-achievements/);
 });

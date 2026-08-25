@@ -74,3 +74,10 @@ export interface ApiError {
   error: string;
   fieldErrors?: Partial<Record<keyof AchievementInput, string>>;
 }
+
+export type AchievementImportMode = "merge" | "replace";
+
+export interface AchievementImportResult {
+  imported: number;
+  skipped: number;
+}

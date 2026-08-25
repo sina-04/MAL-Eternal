@@ -1,9 +1,12 @@
 import { env } from "cloudflare:workers";
 import { getChatGPTUser } from "../app/chatgpt-auth";
 import { cycleBounds, seasonBounds } from "./chronicle";
+import { achievementIdentity } from "./achievement-backup";
 import type {
   Achievement,
   AchievementFilters,
+  AchievementImportMode,
+  AchievementImportResult,
   AchievementInput,
 } from "../types/achievement";
 
@@ -159,6 +162,48 @@ export async function deleteAchievement(userId: string, id: string): Promise<boo
     "DELETE FROM achievements WHERE id = ? AND user_id = ?",
   ).bind(id, userId).run();
   return Number(result.meta.changes ?? 0) > 0;
+}
+
+export async function importAchievements(
+  userId: string,
+  inputs: readonly AchievementInput[],
+  mode: AchievementImportMode,
+): Promise<AchievementImportResult> {
+  await ensureAchievementSchema();
+  const existing = mode === "merge" ? await listAchievements(userId) : [];
+  const seen = new Set(existing.map(achievementIdentity));
+  const accepted: AchievementInput[] = [];
+  let skipped = 0;
+
+  for (const input of inputs) {
+    const identity = achievementIdentity(input);
+    if (seen.has(identity)) {
+      skipped += 1;
+      continue;
+    }
+    seen.add(identity);
+    accepted.push(input);
+  }
+
+  const statements = mode === "replace"
+    ? [env.DB.prepare("DELETE FROM achievements WHERE user_id = ?").bind(userId)]
+    : [];
+  for (const input of accepted) {
+    const timestamp = new Date().toISOString();
+    statements.push(env.DB.prepare(
+      `INSERT INTO achievements (
+        id, user_id, title, description, achieved_on, started_on, finished_on,
+        category, custom_category, tags_json, importance, notes, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(
+      crypto.randomUUID(), userId, input.title, input.description, input.achievedOn,
+      input.startedOn ?? null, input.finishedOn ?? null, input.category,
+      input.customCategory ?? null, JSON.stringify(input.tags ?? []), input.importance,
+      input.notes ?? null, timestamp, timestamp,
+    ));
+  }
+  if (statements.length) await env.DB.batch(statements);
+  return { imported: accepted.length, skipped };
 }
 
 async function ensureAchievementSchema(): Promise<void> {

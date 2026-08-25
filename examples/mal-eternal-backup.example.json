@@ -1,0 +1,19 @@
+{
+  "format": "mal-eternal-achievements",
+  "version": 1,
+  "exportedAt": "2026-08-26T00:00:00.000Z",
+  "achievements": [
+    {
+      "title": "Completed a major project",
+      "description": "Shipped the first stable release and documented the result.",
+      "achievedOn": "2026-08-25",
+      "startedOn": "2026-07-01",
+      "finishedOn": "2026-08-24",
+      "category": "project",
+      "customCategory": null,
+      "tags": ["release", "documentation"],
+      "importance": "milestone",
+      "notes": "Optional private notes"
+    }
+  ]
+}

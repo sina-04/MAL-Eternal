@@ -11,11 +11,14 @@ import {
 import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { cycleBounds, getActiveCycleStart, seasonBounds, summarizeAchievements } from "../lib/chronicle";
+import { achievementIdentity, parseAchievementBackup } from "../lib/achievement-backup";
 import { validateAchievementInput } from "../lib/achievement-validation";
 import { translate, type Locale } from "../lib/i18n";
 import type {
   Achievement,
   AchievementFilters,
+  AchievementImportMode,
+  AchievementImportResult,
   AchievementImportance,
   AchievementInput,
   SeasonKey,
@@ -84,6 +87,9 @@ const server = createServer(async (request, response) => {
     if (url.pathname === "/api/achievements") {
       return await achievementsRoute(request, response, url, visitor);
     }
+    if (url.pathname === "/api/achievements/import") {
+      return await achievementImportRoute(request, response, visitor);
+    }
     const achievementMatch = url.pathname.match(/^\/api\/achievements\/([^/]+)$/);
     if (achievementMatch) {
       return await achievementRoute(request, response, decodeURIComponent(achievementMatch[1]), visitor);
@@ -132,6 +138,30 @@ async function achievementsRoute(
     return json(response, 201, { achievement: createAchievement(visitor.id, validation.value) }, visitor.cookie);
   }
   return methodNotAllowed(response, visitor.cookie, "GET, POST");
+}
+
+async function achievementImportRoute(
+  request: IncomingMessage,
+  response: ServerResponse,
+  visitor: Visitor,
+) {
+  const locale = requestLocale(request);
+  if (request.method !== "POST") return methodNotAllowed(response, visitor.cookie, "POST");
+  const body = await readJson(request) as { mode?: unknown; backup?: unknown };
+  const mode = body.mode as AchievementImportMode;
+  if (mode !== "merge" && mode !== "replace") {
+    return json(response, 400, { error: translate(locale, "backupRequestError") }, visitor.cookie);
+  }
+  const parsed = parseAchievementBackup(body.backup, locale);
+  if (!parsed.ok) {
+    return json(response, 400, { error: parsed.error, issues: parsed.issues }, visitor.cookie);
+  }
+  return json(
+    response,
+    200,
+    importAchievements(visitor.id, parsed.backup.achievements, mode),
+    visitor.cookie,
+  );
 }
 
 async function achievementRoute(
@@ -220,6 +250,11 @@ function getAchievement(userId: string, id: string): Achievement | null {
 }
 
 function createAchievement(userId: string, input: AchievementInput): Achievement {
+  const id = insertAchievement(userId, input);
+  return getAchievement(userId, id)!;
+}
+
+function insertAchievement(userId: string, input: AchievementInput): string {
   const id = randomUUID();
   const timestamp = new Date().toISOString();
   database.prepare(`INSERT INTO achievements (
@@ -232,7 +267,7 @@ function createAchievement(userId: string, input: AchievementInput): Achievement
       input.customCategory ?? null, JSON.stringify(input.tags ?? []), input.importance,
       input.notes ?? null, timestamp, timestamp,
     );
-  return getAchievement(userId, id)!;
+  return id;
 }
 
 function updateAchievement(userId: string, id: string, input: AchievementInput): Achievement | null {
@@ -253,6 +288,39 @@ function updateAchievement(userId: string, id: string, input: AchievementInput):
 function deleteAchievement(userId: string, id: string): boolean {
   const result = database.prepare("DELETE FROM achievements WHERE id = ? AND user_id = ?").run(id, userId);
   return Number(result.changes) > 0;
+}
+
+function importAchievements(
+  userId: string,
+  inputs: readonly AchievementInput[],
+  mode: AchievementImportMode,
+): AchievementImportResult {
+  const existing = mode === "merge" ? listAchievements(userId) : [];
+  const seen = new Set(existing.map(achievementIdentity));
+  const accepted: AchievementInput[] = [];
+  let skipped = 0;
+  for (const input of inputs) {
+    const identity = achievementIdentity(input);
+    if (seen.has(identity)) {
+      skipped += 1;
+      continue;
+    }
+    seen.add(identity);
+    accepted.push(input);
+  }
+
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    if (mode === "replace") {
+      database.prepare("DELETE FROM achievements WHERE user_id = ?").run(userId);
+    }
+    for (const input of accepted) insertAchievement(userId, input);
+    database.exec("COMMIT");
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
+  return { imported: accepted.length, skipped };
 }
 
 function rowToAchievement(row: AchievementRow): Achievement {

@@ -17,6 +17,7 @@ import {
   summarizeAchievements,
 } from "../lib/chronicle.ts";
 import { validateAchievementInput } from "../lib/achievement-validation.ts";
+import { createAchievementBackup, parseAchievementBackup } from "../lib/achievement-backup.ts";
 import { categoryText, formatNumber, monthLabel, seasonLabel, translate } from "../lib/i18n.ts";
 
 test("maps the Chronicle to the true Gregorian January through December year", () => {
@@ -120,4 +121,33 @@ test("summarizes cycle, month, category, and streak analytics", () => {
   assert.equal(summary.currentMonthTotal, 3);
   assert.equal(summary.activeDayStreak, 3);
   assert.equal(summary.dominantCategory, "Project");
+});
+
+test("creates and validates portable achievement JSON backups", () => {
+  const record = {
+    id: "private-server-id",
+    title: "Portable victory",
+    description: "Verified local backup and restore.",
+    achievedOn: "2026-08-25",
+    startedOn: "2026-08-01",
+    finishedOn: "2026-08-24",
+    category: "project",
+    customCategory: null,
+    tags: ["backup"],
+    importance: "milestone",
+    notes: null,
+    createdAt: "2026-08-25T00:00:00.000Z",
+    updatedAt: "2026-08-25T00:00:00.000Z",
+  };
+  const backup = createAchievementBackup([record]);
+  assert.equal(backup.format, "mal-eternal-achievements");
+  assert.equal(backup.version, 1);
+  assert.equal("id" in backup.achievements[0], false);
+
+  const parsed = parseAchievementBackup(JSON.parse(JSON.stringify(backup)));
+  assert.equal(parsed.ok, true);
+  if (parsed.ok) assert.equal(parsed.backup.achievements[0].title, "Portable victory");
+
+  const invalid = parseAchievementBackup({ format: "unknown", version: 1, achievements: [] });
+  assert.equal(invalid.ok, false);
 });

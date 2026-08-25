@@ -13,8 +13,6 @@ services:
         value: 22.13.0
       - key: MAL_RENDER_PREVIEW
         value: "1"
-      - key: NEXT_PUBLIC_MAL_RENDER_PREVIEW
-        value: "1"
       - key: MAL_PREVIEW_DB_PATH
         value: /tmp/mal-eternal-preview.sqlite
       - key: MAL_COOKIE_SECURE

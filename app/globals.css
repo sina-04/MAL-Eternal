@@ -288,33 +288,11 @@ html[lang="fa"] :where(.achievement-card h3, .achievement-card p, .month-branch 
 
 .command-center__stage { min-width: 0; }
 
-.render-preview-badge {
-  position: fixed;
-  z-index: 65;
-  inset-block-start: 0.7rem;
-  inset-inline-start: 50%;
-  display: grid;
-  max-width: min(30rem, calc(100vw - 8rem));
-  padding: 0.5rem 0.9rem;
-  color: #f7d8aa;
-  text-align: center;
+.command-center:has(.dialog-backdrop) { z-index: 77; }
+.experience:has(.dialog-backdrop) :is(.language-switch, .controls) {
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(53, 8, 8, 0.94), rgba(16, 3, 5, 0.92));
-  border: 1px solid rgba(255, 106, 43, 0.48);
-  box-shadow: 0 0 24px rgba(222, 53, 21, 0.22);
-  transform: translateX(-50%);
-}
-
-.render-preview-badge strong {
-  font-family: var(--font-display), sans-serif;
-  font-size: 0.62rem;
-  letter-spacing: 0.13em;
-}
-
-.render-preview-badge span {
-  margin-block-start: 0.15rem;
-  color: #bb9475;
-  font-size: 0.58rem;
 }
 
 .command-rail {
@@ -379,6 +357,15 @@ html[lang="fa"] :where(.achievement-card h3, .achievement-card p, .month-branch 
   z-index: 1;
   display: grid;
   gap: 0.65rem;
+}
+
+.command-actions__divider {
+  margin-block: 0.25rem -0.15rem;
+  color: #9d6848;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
 }
 
 .command-action,
@@ -470,6 +457,7 @@ html[lang="fa"] :where(.achievement-card h3, .achievement-card p, .month-branch 
   .command-rail { padding-inline: 0.55rem; }
   .command-rail__crest { font-size: 1.45rem; }
   .command-rail__eyebrow,
+  .command-actions__divider,
   .command-action:not(.command-action--primary),
   .command-metrics,
   .command-analytics { display: none; }
@@ -1028,6 +1016,7 @@ html[lang="fa"] :where(.achievement-card h3, .achievement-card p, .month-branch 
 
 .button-danger { background: linear-gradient(100deg, #69100e, #cf2e1c 52%, #5b0b0a); }
 .button-primary:disabled,
+.button-secondary:disabled,
 .button-danger:disabled { cursor: wait; opacity: 0.55; }
 
 .workspace-panel {
@@ -1560,9 +1549,45 @@ html[lang="fa"] :where(.achievement-card h3, .achievement-card p, .month-branch 
 .achievement-form__actions,
 .confirm-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 0.6rem; margin-block-start: 0.4rem; }
 
+.backup-import { display: grid; gap: 0.85rem; }
+.backup-file {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr);
+  gap: 0.12rem 0.8rem;
+  align-items: center;
+  border: 1px dashed rgba(240, 129, 67, 0.48);
+  padding: 0.9rem;
+  color: #f4d9b5;
+  cursor: pointer;
+  background: linear-gradient(100deg, rgba(105, 17, 14, 0.42), rgba(7, 4, 7, 0.72));
+  text-align: start;
+}
+.backup-file:hover,
+.backup-file:focus-visible { border-style: solid; border-color: #ef7138; outline: none; box-shadow: 0 0 20px rgba(224, 66, 30, 0.18); }
+.backup-file > span { grid-row: 1 / 3; display: grid; width: 2.6rem; height: 2.6rem; place-items: center; border: 1px solid rgba(239, 112, 54, 0.38); color: #ffc06b; background: rgba(98, 18, 14, 0.5); font-size: 1.25rem; }
+.backup-file strong { font-family: var(--font-display), sans-serif; font-size: 0.68rem; overflow-wrap: anywhere; }
+.backup-file small { color: #96765e; font-size: 0.52rem; }
+.backup-errors { border-inline-start: 2px solid #ed4a2f; padding: 0.7rem 0.85rem; color: #f5c3a7; background: rgba(112, 17, 13, 0.28); }
+.backup-errors strong { font-family: var(--font-display), sans-serif; font-size: 0.65rem; }
+.backup-errors ul { margin: 0.45rem 0 0; padding-inline-start: 1rem; color: #bd8b72; font-size: 0.58rem; }
+.backup-preview { border: 1px solid rgba(232, 112, 57, 0.24); background: rgba(5, 3, 5, 0.54); }
+.backup-preview > header { display: flex; justify-content: space-between; gap: 0.8rem; padding: 0.65rem 0.75rem; border-block-end: 1px solid rgba(232, 112, 57, 0.15); }
+.backup-preview > header span { color: #c97442; font-family: var(--font-display), sans-serif; font-size: 0.5rem; letter-spacing: 0.14em; }
+.backup-preview > header strong { color: #eac79d; font-size: 0.58rem; }
+.backup-preview article { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0.75rem; padding: 0.65rem 0.75rem; border-block-end: 1px solid rgba(255, 255, 255, 0.04); }
+.backup-preview article time { color: #e89a4a; font-size: 0.56rem; }
+.backup-preview article div { display: grid; gap: 0.12rem; }
+.backup-preview article strong { color: #f0d7b6; font-family: var(--font-display), sans-serif; font-size: 0.62rem; }
+.backup-preview article small { color: #8f735d; font-size: 0.5rem; }
+.backup-preview > p { margin: 0; padding: 0.55rem 0.75rem; color: #a78469; font-size: 0.54rem; }
+.backup-replace-confirm { display: grid; grid-template-columns: auto 1fr; gap: 0.55rem; align-items: start; color: #b98d72; font-size: 0.58rem; line-height: 1.45; }
+.backup-replace-confirm input { margin: 0.15rem 0 0; accent-color: #d54427; }
+.backup-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.55rem; }
+
 .command-toast { position: fixed; z-index: 90; inset-inline-start: 50%; inset-block-end: 1.5rem; border: 1px solid rgba(235, 138, 72, 0.52); padding: 0.8rem 1rem; color: #f9dfba; background: rgba(45, 8, 9, 0.96); box-shadow: 0 0 30px rgba(224, 56, 25, 0.25); font-family: var(--font-display), sans-serif; font-size: 0.65rem; letter-spacing: 0.06em; transform: translateX(-50%); }
 .rail-toggle,
-.rail-scrim { display: none; }
+.rail-scrim,
+.mobile-command-nav { display: none; }
 
 .experience--menu .controls {
   inset-inline-end: calc(clamp(13.5rem, 16vw, 19rem) + 1rem);
@@ -1645,7 +1670,22 @@ html[lang="fa"] :where(.achievement-card h3, .achievement-card p, .month-branch 
 
 .command-center--adding > .command-rail,
 .command-center--adding > .rail-toggle,
+.command-center--adding > .mobile-command-nav,
 .command-center--adding > .rail-scrim { display: none !important; }
+
+.experience:has(.command-center--adding) .language-switch {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 48rem), (max-width: 74rem) and (pointer: coarse) {
+  .experience:has(.command-rail--open) .language-switch {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
 
 .command-center__workspace--adding {
   position: fixed;
@@ -1940,4 +1980,84 @@ html[dir="rtl"] .season-emblem {
   .season-card:nth-child(odd) .season-emblem,
   .season-card:nth-child(even) .season-emblem { inset-block-start: 10%; inset-block-end: auto; }
   .month-panel--adding { position: fixed; inset-inline: 0.5rem; inset-block-end: 0.5rem; max-height: 62svh; }
+}
+
+@media (max-width: 48rem), (max-width: 74rem) and (pointer: coarse) {
+  .command-center { grid-template-columns: 0 minmax(0, 1fr) 0; }
+  .command-center__workspace { grid-column: 2; }
+  .rail-toggle { display: none; }
+  .command-rail {
+    position: fixed;
+    z-index: 52;
+    inset-block: 0;
+    width: min(22rem, 92vw);
+    padding-inline: 1rem;
+    padding-block-end: 5.8rem;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .command-rail--left { inset-inline-start: 0; transform: translateX(-105%); }
+  .command-rail--right { inset-inline-end: 0; transform: translateX(105%); }
+  .command-rail--open { opacity: 1; visibility: visible; transform: none; }
+  .command-rail--open .command-rail__eyebrow,
+  .command-rail--open .command-action,
+  .command-rail--open .command-metrics,
+  .command-rail--open .command-analytics { display: grid; }
+  .command-rail--open .command-action { grid-template-columns: 1.5rem 1fr; justify-content: start; padding-inline: 0.85rem; font-size: 0.68rem; }
+  .command-rail--open .command-rail__plaque { inset-inline: 0.85rem; min-height: 0; writing-mode: initial; }
+  .command-actions__divider { display: block; }
+  .rail-scrim { z-index: 50; }
+  .mobile-command-nav {
+    position: fixed;
+    z-index: 45;
+    inset-inline: max(0.65rem, env(safe-area-inset-left)) max(0.65rem, env(safe-area-inset-right));
+    inset-block-end: max(0.65rem, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: 1fr 1.25fr 1fr;
+    gap: 0.35rem;
+    border: 1px solid rgba(238, 117, 58, 0.42);
+    padding: 0.38rem;
+    pointer-events: auto;
+    background: rgba(22, 4, 7, 0.96);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 24px rgba(204, 49, 24, 0.14);
+    backdrop-filter: blur(14px);
+    clip-path: polygon(8px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 8px);
+  }
+  .mobile-command-nav button {
+    display: grid;
+    min-width: 0;
+    min-height: 3.25rem;
+    place-items: center;
+    gap: 0.08rem;
+    border: 1px solid rgba(236, 123, 65, 0.18);
+    padding: 0.35rem;
+    color: #dcb68b;
+    cursor: pointer;
+    background: rgba(8, 3, 6, 0.72);
+  }
+  .mobile-command-nav button[aria-expanded="true"],
+  .mobile-command-nav button:hover,
+  .mobile-command-nav button:focus-visible { border-color: #ed6c35; color: #fff1d5; outline: none; background: rgba(110, 18, 14, 0.74); }
+  .mobile-command-nav button span { color: #f3a04a; font-size: 1rem; line-height: 1; }
+  .mobile-command-nav button b { overflow: hidden; font-family: var(--font-display), sans-serif; font-size: clamp(0.44rem, 1.8vw, 0.58rem); text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+  .mobile-command-nav__primary { border-color: rgba(255, 110, 51, 0.68) !important; color: #fff2da !important; background: linear-gradient(100deg, #70140e, #b72c1b 52%, #65110d) !important; }
+  .workspace-panel:not(.chronicle-view--adding) { padding-block-end: 6.5rem; }
+  .idle-readout { inset-block-end: 8.8rem; }
+  .experience--menu .controls { inset-inline-end: 0.75rem; inset-block-end: 5.3rem; }
+  .chronicle-view--adding > .workspace-header {
+    position: sticky;
+    z-index: 35;
+    inset-block-start: 0;
+    padding-block-start: max(0.65rem, env(safe-area-inset-top));
+    background: linear-gradient(180deg, #090509 82%, transparent);
+  }
+  .experience:has(.command-center--adding) .controls {
+    position: fixed;
+    z-index: 60;
+    inset-inline: auto max(0.65rem, env(safe-area-inset-right));
+    inset-block-end: max(0.65rem, env(safe-area-inset-bottom));
+    padding: 0.45rem 0.6rem;
+  }
+  .month-panel--adding { inset-block-end: max(0.5rem, env(safe-area-inset-bottom)); }
 }

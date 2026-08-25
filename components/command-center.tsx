@@ -6,6 +6,7 @@ import {
   ConfirmDeleteDialog,
   DialogFrame,
 } from "./achievement-dialogs";
+import { BackupDialog } from "./backup-dialog";
 import { DoomSelect } from "./doom-select";
 import { useLocale } from "./locale-provider";
 import {
@@ -43,9 +44,11 @@ import {
   CURATED_CATEGORIES,
   IMPORTANCE_LEVELS,
   type Achievement,
+  type AchievementImportResult,
   type AnalyticsSummary,
   type SeasonKey,
 } from "../types/achievement";
+import { createAchievementBackup } from "../lib/achievement-backup";
 
 type WorkspaceView = "idle" | "chronicle" | "archive" | "milestones" | "analytics";
 type Rail = "left" | "right" | null;
@@ -56,7 +59,6 @@ const CURRENT_SOLAR_YEAR = getCurrentSolarHijriYear();
 const SOLAR_YEARS = Array.from({ length: CURRENT_SOLAR_YEAR - 1400 }, (_, index) => CURRENT_SOLAR_YEAR - index);
 const CALENDAR_PREFERENCE_KEY = "mal-eternal:calendar-mode";
 const EMPTY_SUMMARY: AnalyticsSummary = summarizeAchievements([]);
-const IS_RENDER_PREVIEW = process.env.NEXT_PUBLIC_MAL_RENDER_PREVIEW === "1";
 
 export function CommandCenter() {
   const { locale, t } = useLocale();
@@ -70,6 +72,7 @@ export function CommandCenter() {
   const [hoveredSeason, setHoveredSeason] = useState<SeasonKey | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [yearDialogOpen, setYearDialogOpen] = useState(false);
+  const [backupDialogOpen, setBackupDialogOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formDate, setFormDate] = useState(todayInTehran());
   const [editing, setEditing] = useState<Achievement | null>(null);
@@ -154,6 +157,21 @@ export function CommandCenter() {
     const timer = window.setTimeout(() => setToast(""), 3600);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    if (!addingFlow) return;
+    const resetViewport = () => {
+      document.querySelector<HTMLElement>(".experience")?.scrollTo({ top: 0, left: 0 });
+      window.scrollTo({ top: 0, left: 0 });
+    };
+    resetViewport();
+    const immediate = window.setTimeout(resetViewport, 0);
+    const afterFocusRestore = window.setTimeout(resetViewport, 160);
+    return () => {
+      window.clearTimeout(immediate);
+      window.clearTimeout(afterFocusRestore);
+    };
+  }, [addingFlow]);
 
   const customCategories = useMemo(
     () => [...new Set(achievements.map((item) => item.customCategory).filter((value): value is string => Boolean(value)))].sort(),
@@ -250,17 +268,33 @@ export function CommandCenter() {
     navigate("archive");
     window.setTimeout(() => document.querySelector<HTMLInputElement>(".archive-search input")?.focus(), 0);
   };
+  const exportBackup = () => {
+    const backup = createAchievementBackup(achievements);
+    const blob = new Blob([`${JSON.stringify(backup, null, 2)}\n`], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mal-eternal-backup-${todayInTehran()}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    setToast(t("backupExported"));
+    setMobileRail(null);
+  };
+  const onBackupImported = (result: AchievementImportResult) => {
+    setBackupDialogOpen(false);
+    setToast(t("backupImported", {
+      imported: formatNumber(result.imported, locale),
+      skipped: formatNumber(result.skipped, locale),
+    }));
+    void loadRecords(cycle);
+  };
 
   return (
     <section className={`command-center ${addingFlow ? "command-center--adding" : ""}`} aria-label={t("commandCenter")}>
-      {IS_RENDER_PREVIEW ? (
-        <div className="render-preview-badge" role="status">
-          <strong>{t("freePreview")}</strong>
-          <span>{t("previewDataReset")}</span>
-        </div>
-      ) : null}
-      <button className="rail-toggle rail-toggle--left" type="button" onClick={() => setMobileRail(mobileRail === "left" ? null : "left")} aria-expanded={mobileRail === "left"} aria-label={t("openAchievementSide")}>☰</button>
-      <aside className={`command-rail command-rail--left ${mobileRail === "left" ? "command-rail--open" : ""}`} aria-label={t("achievementSide")}>
+      <button className="rail-toggle rail-toggle--left" type="button" onClick={() => setMobileRail(mobileRail === "left" ? null : "left")} aria-expanded={mobileRail === "left"} aria-controls="achievement-rail" aria-label={t("openAchievementSide")}>☰</button>
+      <aside id="achievement-rail" className={`command-rail command-rail--left ${mobileRail === "left" ? "command-rail--open" : ""}`} aria-label={t("achievementSide")}>
         <div className="command-rail__crest" aria-hidden="true">MAL</div>
         <p className="command-rail__eyebrow">{t("chronicleCommands")}</p>
         <nav className="command-actions" aria-label={t("achievementNavigation")}>
@@ -269,6 +303,9 @@ export function CommandCenter() {
           <RailButton icon="▤" label={t("achievementArchive")} active={view === "archive"} onClick={() => navigate("archive")} />
           <RailButton icon="◆" label={t("milestones")} active={view === "milestones"} onClick={() => navigate("milestones")} />
           <RailButton icon="⌕" label={t("search")} onClick={focusSearch} />
+          <span className="command-actions__divider">{t("dataVault")}</span>
+          <RailButton icon="⇧" label={t("importJson")} onClick={() => { setBackupDialogOpen(true); setMobileRail(null); }} />
+          <RailButton icon="⇩" label={t("exportJson")} onClick={exportBackup} />
         </nav>
         <div className="command-rail__plaque">{t("achievementSide")}</div>
       </aside>
@@ -285,8 +322,14 @@ export function CommandCenter() {
         {loadError ? <div className="workspace-error" role="alert"><strong>{t("archiveLinkDisrupted")}</strong><span>{loadError}</span><button type="button" onClick={() => void loadRecords(cycle)}>{t("retry")}</button></div> : null}
       </section>
 
-      <button className="rail-toggle rail-toggle--right" type="button" onClick={() => setMobileRail(mobileRail === "right" ? null : "right")} aria-expanded={mobileRail === "right"} aria-label={t("openAnalytics")}>▥</button>
-      <aside className={`command-rail command-rail--right ${mobileRail === "right" ? "command-rail--open" : ""}`} aria-label={t("analyticalSide")}>
+      <nav className="mobile-command-nav" aria-label={t("achievementNavigation")}>
+        <button type="button" onClick={() => setMobileRail(mobileRail === "left" ? null : "left")} aria-expanded={mobileRail === "left"} aria-controls="achievement-rail"><span aria-hidden="true">☰</span><b>{t("achievementSide")}</b></button>
+        <button type="button" className="mobile-command-nav__primary" onClick={beginAdd}><span aria-hidden="true">+</span><b>{t("addAchievement")}</b></button>
+        <button type="button" onClick={() => setMobileRail(mobileRail === "right" ? null : "right")} aria-expanded={mobileRail === "right"} aria-controls="analytical-rail"><span aria-hidden="true">▥</span><b>{t("analyticalSide")}</b></button>
+      </nav>
+
+      <button className="rail-toggle rail-toggle--right" type="button" onClick={() => setMobileRail(mobileRail === "right" ? null : "right")} aria-expanded={mobileRail === "right"} aria-controls="analytical-rail" aria-label={t("openAnalytics")}>▥</button>
+      <aside id="analytical-rail" className={`command-rail command-rail--right ${mobileRail === "right" ? "command-rail--open" : ""}`} aria-label={t("analyticalSide")}>
         <p className="command-rail__eyebrow">{t("archiveTelemetry")}</p>
         <div className="command-metrics" aria-live="polite">
           <Metric label={t("lifetimeVictories")} value={loading ? "…" : formatNumber(summary.lifetimeTotal, locale)} />
@@ -307,6 +350,7 @@ export function CommandCenter() {
         </DialogFrame>
       ) : null}
       {formOpen ? <AchievementDialog achievedOn={formDate} achievement={editing} customCategories={customCategories} onClose={() => setFormOpen(false)} onSaved={onSaved} /> : null}
+      {backupDialogOpen ? <BackupDialog onClose={() => setBackupDialogOpen(false)} onImported={onBackupImported} /> : null}
       {deleteTarget ? <ConfirmDeleteDialog achievement={deleteTarget} deleting={deleting} onClose={() => setDeleteTarget(null)} onConfirm={() => void confirmDelete()} /> : null}
       {toast ? <div className="command-toast" role="status">{toast}</div> : null}
     </section>
