@@ -8,7 +8,7 @@
 
 MAL Eternal is a private, Doom-inspired achievement command center for recording victories, exploring Gregorian and Solar Hijri timelines, searching archives, and viewing analytics—with cinematic audio, bilingual English/Persian UI, and RTL support.
 
-![MAL Eternal command center](public/og.png)
+![MAL Eternal command center](public/og.svg)
 
 ## Highlights
 
