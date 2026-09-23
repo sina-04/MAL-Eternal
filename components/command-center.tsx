@@ -49,6 +49,10 @@ import {
   type SeasonKey,
 } from "../types/achievement";
 import { createAchievementBackup } from "../lib/achievement-backup";
+import {
+  loadAchievementData,
+  removeAchievement,
+} from "../lib/achievement-client";
 
 type WorkspaceView = "idle" | "chronicle" | "archive" | "milestones" | "analytics";
 type Rail = "left" | "right" | null;
@@ -95,15 +99,9 @@ export function CommandCenter() {
     setLoading(true);
     setLoadError("");
     try {
-      const [recordsResponse, analyticsResponse] = await Promise.all([
-        fetch("/api/achievements", { cache: "no-store", headers: { "x-mal-locale": locale } }),
-        fetch(`/api/analytics?cycle=${cycleToLoad}`, { cache: "no-store", headers: { "x-mal-locale": locale } }),
-      ]);
-      const records = await recordsResponse.json() as { achievements?: Achievement[]; error?: string };
-      const analytics = await analyticsResponse.json() as { summary?: AnalyticsSummary; error?: string };
-      if (!recordsResponse.ok || !records.achievements) throw new Error(records.error || t("archiveOpenError"));
-      setAchievements(records.achievements);
-      setSummary(analytics.summary ?? summarizeAchievements(records.achievements, cycleToLoad));
+      const data = await loadAchievementData(locale, cycleToLoad);
+      setAchievements(data.achievements);
+      setSummary(data.summary);
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : t("archiveOpenError"));
     } finally {
@@ -248,9 +246,7 @@ export function CommandCenter() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const response = await fetch(`/api/achievements/${deleteTarget.id}`, { method: "DELETE", headers: { "x-mal-locale": locale } });
-      const result = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(result.error || t("eraseError"));
+      await removeAchievement(deleteTarget.id, locale);
       setAchievements((current) => {
         const next = current.filter((item) => item.id !== deleteTarget.id);
         setSummary(summarizeAchievements(next, cycle));

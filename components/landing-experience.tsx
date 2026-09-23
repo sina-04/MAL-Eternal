@@ -20,6 +20,7 @@ const INTRO_LINES: readonly IntroLine[] = [
 
 const GATE_START_TIME = 31.15;
 const GATE_TRANSITION_MS = 2450;
+const ASSET_PREFIX = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 function lineAt(time: number) {
   return INTRO_LINES.findIndex(({ start, end }) => time >= start && time < end);
@@ -152,7 +153,7 @@ export function LandingExperience() {
       >
         <img
           className="menu-scene__art"
-          src="/assets/mal-eternal-menu.svg"
+          src={`${ASSET_PREFIX}/assets/mal-eternal-menu.svg`}
           alt={t("mainMenuAlt")}
         />
         <div className="menu-scene__shade" aria-hidden="true" />
@@ -168,7 +169,7 @@ export function LandingExperience() {
       <section className={`landing ${hasEntered ? "landing--active" : ""}`} aria-hidden={menuVisible}>
         <img
           className="landing__art"
-          src="/assets/intro-landing.svg"
+          src={`${ASSET_PREFIX}/assets/intro-landing.svg`}
           alt={t("landingAlt")}
         />
         <div className="landing__shade" aria-hidden="true" />
@@ -224,7 +225,7 @@ export function LandingExperience() {
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio
         ref={audioRef}
-        src="/assets/hell-on-earth.mp3"
+        src={`${ASSET_PREFIX}/assets/hell-on-earth.mp3`}
         preload="auto"
         onPlay={() => {
           setAudioEngaged(true);

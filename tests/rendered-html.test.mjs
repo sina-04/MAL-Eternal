@@ -90,10 +90,11 @@ test("ships the full-screen seasonal achievement coordinate map", async () => {
 });
 
 test("ships a persistent English and Persian interface with RTL Sahel typography", async () => {
-  const [provider, commandCenter, dialogs, i18n, styles] = await Promise.all([
+  const [provider, commandCenter, dialogs, achievementClient, i18n, styles] = await Promise.all([
     readFile(new URL("../components/locale-provider.tsx", import.meta.url), "utf8"),
     readFile(new URL("../components/command-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../components/achievement-dialogs.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/achievement-client.ts", import.meta.url), "utf8"),
     readFile(new URL("../lib/i18n.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     access(new URL("../public/fonts/Sahel.woff", import.meta.url)),
@@ -106,7 +107,8 @@ test("ships a persistent English and Persian interface with RTL Sahel typography
   assert.match(provider, /language-switch__persian/);
   assert.match(provider, /lang="fa" dir="rtl"/);
   assert.match(commandCenter, /useLocale/);
-  assert.match(dialogs, /x-mal-locale/);
+  assert.match(dialogs, /saveAchievement/);
+  assert.match(achievementClient, /x-mal-locale/);
   assert.match(i18n, /افزودن دستاورد/);
   assert.match(i18n, /هجری شمسی/);
   assert.match(styles, /font-family: "Sahel"/);

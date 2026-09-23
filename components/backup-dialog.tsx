@@ -10,6 +10,7 @@ import { categoryText, formatNumber, formatUiDate } from "../lib/i18n";
 import type { AchievementImportMode, AchievementImportResult } from "../types/achievement";
 import { DialogFrame } from "./achievement-dialogs";
 import { useLocale } from "./locale-provider";
+import { importAchievementBackup } from "../lib/achievement-client";
 
 const MAX_BACKUP_FILE_BYTES = 900_000;
 
@@ -49,14 +50,12 @@ export function BackupDialog({ onClose, onImported }: {
     setImporting(true);
     setRequestError("");
     try {
-      const response = await fetch("/api/achievements/import", {
-        method: "POST",
-        headers: { "content-type": "application/json", "x-mal-locale": locale },
-        body: JSON.stringify({ mode, backup: parsed.backup satisfies AchievementBackup }),
-      });
-      const result = await response.json() as AchievementImportResult & { error?: string };
-      if (!response.ok) throw new Error(result.error || t("backupRequestError"));
-      onImported({ imported: result.imported, skipped: result.skipped });
+      const result = await importAchievementBackup(
+        parsed.backup satisfies AchievementBackup,
+        mode,
+        locale,
+      );
+      onImported(result);
     } catch (error) {
       setRequestError(error instanceof Error ? error.message : t("backupRequestError"));
     } finally {

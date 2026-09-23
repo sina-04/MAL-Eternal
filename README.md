@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/sina-04/MAL-Eternal/actions/workflows/ci.yml/badge.svg)](https://github.com/sina-04/MAL-Eternal/actions/workflows/ci.yml)
 [![Live preview](https://img.shields.io/badge/preview-Render-46E3B7)](https://mal-eternal.onrender.com)
+[![GitHub Pages](https://img.shields.io/badge/temporary%20preview-GitHub%20Pages-222222?logo=github)](https://sina-04.github.io/MAL-Eternal/)
 [![License: MIT](https://img.shields.io/badge/code%20license-MIT-yellow.svg)](LICENSE)
 
 > **Shotgun shells blaze red, demons awaken at night. Halo may stretch to infinity—but your victories are Eternal.**
@@ -43,6 +44,8 @@ This repository contains application code, database schema, migrations, and publ
 - Private deployment project identifiers
 
 Achievement data remains in the configured D1 database. Every achievement and analytics request is scoped to the authenticated user on the server.
+
+The temporary GitHub Pages preview runs as a static site and stores records only in the current browser's local storage. Use JSON export before clearing browser data or moving to another device.
 
 ## Local development
 

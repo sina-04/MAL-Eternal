@@ -16,6 +16,7 @@ const hostingConfig = JSON.parse(
 ) as HostingConfig;
 const { d1, r2 } = hostingConfig;
 const isRenderPreview = process.env.MAL_RENDER_PREVIEW === "1";
+const isGitHubPages = process.env.MAL_GITHUB_PAGES === "1";
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
@@ -53,12 +54,13 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    base: isGitHubPages ? "/MAL-Eternal/" : "/",
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
     plugins: [
       vinext(),
-      ...(isRenderPreview ? [] : [sites()]),
+      ...(isRenderPreview || isGitHubPages ? [] : [sites()]),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         config: localBindingConfig,

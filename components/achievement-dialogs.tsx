@@ -11,6 +11,7 @@ import {
 import { categoryText, formatUiDate, importanceText } from "../lib/i18n";
 import { DoomSelect } from "./doom-select";
 import { useLocale } from "./locale-provider";
+import { AchievementClientError, saveAchievement } from "../lib/achievement-client";
 
 type DialogFrameProps = {
   title: string;
@@ -129,23 +130,14 @@ export function AchievementDialog({
       notes: form.notes || null,
     };
     try {
-      const response = await fetch(
-        achievement ? `/api/achievements/${achievement.id}` : "/api/achievements",
-        {
-          method: achievement ? "PATCH" : "POST",
-          headers: { "content-type": "application/json", "x-mal-locale": locale },
-          body: JSON.stringify(payload),
-        },
-      );
-      const result = await response.json() as { achievement?: Achievement } & ApiError;
-      if (!response.ok || !result.achievement) {
-        setError(result.error || t("saveError"));
-        setFieldErrors(result.fieldErrors ?? {});
-        return;
+      onSaved(await saveAchievement(payload, locale, achievement));
+    } catch (caught) {
+      if (caught instanceof AchievementClientError) {
+        setError(caught.message || t("saveError"));
+        setFieldErrors(caught.fieldErrors ?? {});
+      } else {
+        setError(t("archiveReachError"));
       }
-      onSaved(result.achievement);
-    } catch {
-      setError(t("archiveReachError"));
     } finally {
       setSaving(false);
     }
